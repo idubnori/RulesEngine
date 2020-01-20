@@ -1,0 +1,33 @@
+variables:
+  pool_name: 'Hosted Ubuntu 1604'
+  major: 0
+  minor: 1
+  patch: $[counter('patch_counter_test_1', 0)]
+  BuildVersion: $(major).$(minor).$(patch)
+
+resources:
+- repo: self
+
+queue:
+  name: $(pool_name)
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: 'src/**/*.sln'
+
+- task: DotNetCoreCLI@2
+  displayName: Tests
+  inputs:
+    command: test
+    projects: 'test/**/*.csproj'
+    arguments: '--no-build'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet pack'
+  inputs:
+    command: pack
+    packagesToPack: src/RulesEngine/RulesEngine
+    versioningScheme: byEnvVar
+    versionEnvVar: BuildVersion
